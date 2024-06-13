@@ -16,12 +16,8 @@ logger.setLevel(settings.LOG_LEVEL)
 class Purchase():
     @purchase_api.post('/shop-items')
     async def shop_items(self, user_id: int, item_id: int, qty: int):
-        try:
-            resp = purchase(user_id, item_id, qty)
-            if "Error" in resp:
-                return JSONResponse(content={"code": 400, "success":False, "message": resp})
-            logger.info(f"post /shop-items endpoint is being hit")
-            return JSONResponse(content={"code": 200, "success":True, "message": resp})
-        except Exception as e:
-            logger.error(f"post /operational-hours endpoint is being hit (error) : {e}")
-            return JSONResponse(content={"code": 500, "success":False, "message": resp})
+        resp = purchase(user_id, item_id, qty)
+        if "Error" in resp:
+            return JSONResponse(content={"code": 400, "success":False, "message": resp})
+        logger.info(f"post /shop-items endpoint is being hit")
+        return JSONResponse(content={"code": 200, "success":True, "message": resp})

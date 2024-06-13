@@ -5,20 +5,37 @@ from app.repository.purchase import *
 def purchase(user_id, item_id, qty):
     with Session(engine) as session:
         user_currency = get_user_currency(user_id, session)
-        item_price = get_pricing_item(item_id, session)
-    
-    if item_price.first() is None:
-        return "Error: Item not found"
+        item_price = get_pricing_item(item_id, session).fetchone()
 
-    for item in item_price:
+        if item_price is None:
+            return "Error: Item not found"
+
         for currency in user_currency:
-            if item.currency_id == currency.currency_type:
-                print("user currency : ", currency.currency_name)
-                print("user currency : ", currency.amount)
-                print("total harga : ", item.price*qty)
-                if currency.amount < item.price*qty:
-                    return "doesnt have enough currency to buy this item"
-                if qty >= item.max_owned:
-                    return "exceeded item limit"
-    
+            if item_price.currency_id == currency.currency_type:
+                if currency.amount < item_price.price*qty:
+                    return "Error: doesnt have enough currency to buy this item"
+                if qty >= item_price.max_owned:
+                    return "Error: exceeded item limit"
+        
+        transaction_data = get_transaction(user_id, item_id, session).fetchone()
+
+        if transaction_data is None:
+            insert_transaction(
+                user_id=user_id,
+                item_id=item_price.id,
+                total_item=qty,
+                session=session
+            )
+        
+        total_item_user = transaction_data.total_item+qty
+        if total_item_user > item_price.max_owned:
+            return f"Error: exceeded item limit. user already have {transaction_data.total_item} item(s) before this transaction"
+
+        update_transaction(
+            user_id=user_id,
+            item_id=item_id,
+            total_item=total_item_user,
+            session=session
+        )
+
     return "Success"

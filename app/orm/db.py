@@ -47,6 +47,6 @@ Transaction = Table(
     metadata,
     Column('id', Integer, primary_key=True),
     Column('user_id', Integer, ForeignKey("user_data.user_id")),
-    Column('pricing_item_id', Integer, ForeignKey("pricing_item.id")),
+    Column('item_id', Integer, ForeignKey("items.item_id")),
     Column('total_item', Integer),
 )
