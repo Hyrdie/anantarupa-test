@@ -10,12 +10,15 @@ def purchase(user_id, item_id, qty):
         if item_price is None:
             return "Error: Item not found"
 
+        total_amount_currency = 0
         for currency in user_currency:
             if item_price.currency_id == currency.currency_type:
                 if currency.amount < item_price.price*qty:
                     return "Error: doesnt have enough currency to buy this item"
                 if qty >= item_price.max_owned:
                     return "Error: exceeded item limit"
+                
+                total_amount_currency = item_price.price*qty
         
         transaction_data = get_transaction(user_id, item_id, session).fetchone()
 
@@ -27,9 +30,18 @@ def purchase(user_id, item_id, qty):
                 session=session
             )
         
+        
+        
         total_item_user = transaction_data.total_item+qty
         if total_item_user > item_price.max_owned:
             return f"Error: exceeded item limit. user already have {transaction_data.total_item} item(s) before this transaction"
+        
+        update_currency_user(
+            user_id=user_id,
+            currency_id=item_price.currency_id,
+            amount=total_amount_currency,
+            session=session
+        )
 
         update_transaction(
             user_id=user_id,

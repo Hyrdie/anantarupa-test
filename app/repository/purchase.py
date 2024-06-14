@@ -59,3 +59,18 @@ def update_transaction(user_id, item_id, total_item, session):
     update_transaction_total_item = session.execute(sql)
     session.commit()
     return update_transaction_total_item
+
+def update_currency_user(user_id, currency_id, amount, session):
+    sql = sa.update(
+        UserCurrency
+    ).where(
+        sa.and_(
+            UserCurrency.c.user_id==user_id,
+            UserCurrency.c.currency_type==currency_id
+        )
+    ).values(
+        amount=amount
+    )
+    update_currency = session.execute(sql)
+    session.commit()
+    return update_currency
